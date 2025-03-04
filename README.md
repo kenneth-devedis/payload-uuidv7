@@ -1,8 +1,15 @@
-# blank
+# Setup
 
-blank
+Make sure you have nothing running on port `5432` and `3000`.
 
-## Attributes
+```bash
+docker compose up -d
+pnpm i
+cp .env.example .env
+pnpm run payload migrate
+pnpm run dev
+```
 
-- **Database**: mongodb
-- **Storage Adapter**: localDisk
+Visit `http://localhost:3000/admin/login`
+
+Login repeatedly.

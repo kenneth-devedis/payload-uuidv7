@@ -9,6 +9,7 @@ import sharp from 'sharp'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { sql } from '@payloadcms/db-postgres/drizzle'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -27,9 +28,26 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: postgresAdapter({
+    idType: 'uuid',
+    logger: true,
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },
+    beforeSchemaInit: [
+      ({schema, adapter}) => {
+        const allTables = Object.values(adapter.rawTables)
+        allTables.forEach(table => {
+          const idColumn = table.columns.id
+          if (!idColumn || idColumn.type !== 'uuid') return
+          table.columns.id = {
+            ...idColumn,
+            default: sql`uuid_generate_v7()`,
+            defaultRandom: false
+          }
+        })
+        return schema
+      },
+    ]
   }),
   sharp,
   plugins: [
